@@ -7,28 +7,37 @@ import { usePathname, useRouter } from 'next/navigation'
 export function BottomNav() {
   const pathname = usePathname()
   const router = useRouter()
+
   const iconColor = 'var(--tg-theme-text-color)'
+  const activeColor = 'var(--tg-theme-button-color)'
 
   return (
     <div
+      className="
+        fixed bottom-30 left-0 right-0 z-[100]
+        flex justify-around items-center
+        border-t
+        rounded-t-3xl
+        shadow-[0_-2px_20px_rgba(0,0,0,0.08)]
+        backdrop-blur-md
+        pb-[env(safe-area-inset-bottom)] pt-1
+        text-center
+      "
       style={{
-        position: 'fixed',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        zIndex: 100,
-        backgroundColor: 'var(--tg-theme-bg-color)',
-        borderTop: '1px solid var(--tg-theme-hint-color)',
-        textAlign: 'center'
+        backgroundColor: 'var(--tg-theme-secondary-bg-color)',
+        borderColor: 'var(--tg-theme-hint-color)',
       }}
     >
-      <Tabbar>
+      <Tabbar className="w-full flex justify-around">
         <Tabbar.Item
           selected={pathname === '/'}
           text="Домой"
           onClick={() => router.push('/')}
         >
-          <Home color={iconColor} size={26} />
+          <Home
+            size={26}
+            color={pathname === '/' ? activeColor : iconColor}
+          />
         </Tabbar.Item>
 
         <Tabbar.Item
@@ -36,7 +45,10 @@ export function BottomNav() {
           text="Каталог"
           onClick={() => router.push('/catalog')}
         >
-          <Grid color={iconColor} size={26} />
+          <Grid
+            size={26}
+            color={pathname === '/catalog' ? activeColor : iconColor}
+          />
         </Tabbar.Item>
 
         <Tabbar.Item
@@ -44,7 +56,10 @@ export function BottomNav() {
           text="Корзина"
           onClick={() => router.push('/cart')}
         >
-          <ShoppingCart color={iconColor} size={26} />
+          <ShoppingCart
+            size={26}
+            color={pathname === '/cart' ? activeColor : iconColor}
+          />
         </Tabbar.Item>
 
         <Tabbar.Item
@@ -52,7 +67,10 @@ export function BottomNav() {
           text="Профиль"
           onClick={() => router.push('/profile')}
         >
-          <User color={iconColor} size={26} />
+          <User
+            size={26}
+            color={pathname === '/profile' ? activeColor : iconColor}
+          />
         </Tabbar.Item>
       </Tabbar>
     </div>
