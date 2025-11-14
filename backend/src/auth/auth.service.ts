@@ -1,24 +1,75 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import * as crypto from 'crypto';
+import { UsersService } from 'src/users/users.service';
 
 @Injectable()
 export class AuthService {
-  parseInitData(initData: string) {
-    if (!initData) {
-      return { error: 'initData is empty' };
-    }
+  constructor(private readonly usersService: UsersService) { }
+
+  validateTelegramInitData(initData: string) {
+    if (!initData) throw new UnauthorizedException('Init data is empty');
 
     const params = new URLSearchParams(initData);
-    const result: Record<string, any> = {};
+    const hash = params.get('hash');
 
-    for (const [key, value] of params.entries()) {
-      // если значение JSON — попробуем распарсить
+    if (!hash) throw new UnauthorizedException('Missing hash');
+    params.delete('hash');
+
+    console.log('BOT_TOKEN:', process.env.BOT_TOKEN);
+
+
+    const dataCheckString = Array.from(params.keys())
+      .sort()
+      .map((key) => `${key}=${params.get(key)}`)
+      .join('\n');
+
+    // ✔ Правильное вычисление Telegram secret key
+    const secretKey = crypto
+      .createHash('sha256')
+      .update(process.env.BOT_TOKEN!)
+      .digest();
+
+    const checkHash = crypto
+      .createHmac('sha256', secretKey)
+      .update(dataCheckString)
+      .digest('hex');
+
+    if (checkHash !== hash) {
+      console.log('Expected:', checkHash);
+      console.log('Received:', hash);
+      throw new UnauthorizedException('Wrong signature');
+    }
+
+    // ✔ Аккуратное извлечение user
+    let user: any = {};
+    const userRaw = params.get('user');
+    if (userRaw) {
       try {
-        result[key] = JSON.parse(value);
+        user = JSON.parse(userRaw);
       } catch {
-        result[key] = value;
+        throw new UnauthorizedException('Invalid user JSON');
       }
     }
 
-    return result;
+    return {
+      user,
+      auth_date: params.get('auth_date'),
+      query_id: params.get('query_id'),
+    };
+  }
+
+  async authWithTelegram(initData: string) {
+    const data = this.validateTelegramInitData(initData);
+
+    const user = await this.usersService.createOrUpdate({
+      telegramId: String(data.user.id),
+      firstName: data.user.first_name,
+      lastName: data.user.last_name,
+    });
+
+    return {
+      ok: true,
+      user,
+    };
   }
 }

@@ -72,6 +72,17 @@ export function BottomNav() {
             color={pathname === '/profile' ? activeColor : iconColor}
           />
         </Tabbar.Item>
+
+        <Tabbar.Item
+          selected={pathname === '/debug'}
+          text="Логи"
+          onClick={() => router.push('/debug')}
+        >
+          <User
+            size={26}
+            color={pathname === '/debug' ? activeColor : iconColor}
+          />
+        </Tabbar.Item>
       </Tabbar>
     </div>
   )

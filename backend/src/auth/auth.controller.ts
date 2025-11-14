@@ -7,8 +7,6 @@ export class AuthController {
 
   @Post('telegram')
   async handleTelegramAuth(@Body('initData') initData: string) {
-    // просто передаём строку в сервис, чтобы её распарсить
-    const parsed = this.authService.parseInitData(initData);
-    return parsed;
+    return this.authService.validateTelegramInitData(initData);
   }
 }

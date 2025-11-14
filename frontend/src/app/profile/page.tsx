@@ -1,4 +1,4 @@
-
+'use client'
 import { useLaunchParams } from '@telegram-apps/sdk-react'
 import { Title, Text, Avatar } from '@telegram-apps/telegram-ui'
 

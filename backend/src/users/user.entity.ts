@@ -1,24 +1,33 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, UpdateDateColumn } from 'typeorm'
-
+import {
+    Entity,
+    PrimaryGeneratedColumn,
+    Column,
+    CreateDateColumn,
+    UpdateDateColumn,
+} from 'typeorm';
 
 @Entity()
 export class User {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ type: 'bigint', unique: true })
+    // Telegram ID нельзя хранить как number — слишком большой
+    @Column({
+        type: 'bigint',
+        unique: true,
+        comment: 'Telegram user ID (stored as string because bigint > JS limit)',
+    })
     telegramId: string;
 
     @Column({ nullable: true })
-    firstName?: string
+    firstName?: string;
 
     @Column({ nullable: true })
-    lastName?: string
+    lastName?: string;
 
     @CreateDateColumn()
-    createdAt: Date
+    createdAt: Date;
 
     @UpdateDateColumn()
-    updatedAt: Date
-
+    updatedAt: Date;
 }
