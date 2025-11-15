@@ -4,7 +4,7 @@ import dynamic from 'next/dynamic'
 import { PropsWithChildren } from 'react'
 
 // Загружаем Root только на клиенте
-const Root = dynamic(() => import('./Root/Root').then(m => m.Root), {
+const Root = dynamic(() => import('./Root').then(m => m.Root), {
     ssr: false,
 })
 
