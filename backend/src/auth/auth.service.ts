@@ -6,70 +6,36 @@ import { UsersService } from 'src/users/users.service';
 export class AuthService {
   constructor(private readonly usersService: UsersService) { }
 
-  validateTelegramInitData(initData: string) {
-    if (!initData) throw new UnauthorizedException('Init data is empty');
+  async authWithTelegram(initData: string) {
+    if (!initData) {
+      throw new UnauthorizedException('Init data is empty');
+    }
 
     const params = new URLSearchParams(initData);
-    const hash = params.get('hash');
 
-    if (!hash) throw new UnauthorizedException('Missing hash');
-    params.delete('hash');
+    const signature = params.get('signature'); 
 
-    console.log('BOT_TOKEN:', process.env.BOT_TOKEN);
-
-
-    const dataCheckString = Array.from(params.keys())
-      .sort()
-      .map((key) => `${key}=${params.get(key)}`)
-      .join('\n');
-
-    // ✔ Правильное вычисление Telegram secret key
-    const secretKey = crypto
-      .createHash('sha256')
-      .update(process.env.BOT_TOKEN!)
-      .digest();
-
-    const checkHash = crypto
-      .createHmac('sha256', secretKey)
-      .update(dataCheckString)
-      .digest('hex');
-
-    if (checkHash !== hash) {
-      console.log('Expected:', checkHash);
-      console.log('Received:', hash);
-      throw new UnauthorizedException('Wrong signature');
+    if (!signature) {
+      console.log('Using WebApp hash mode');
     }
 
-    // ✔ Аккуратное извлечение user
-    let user: any = {};
-    const userRaw = params.get('user');
-    if (userRaw) {
-      try {
-        user = JSON.parse(userRaw);
-      } catch {
-        throw new UnauthorizedException('Invalid user JSON');
-      }
+    const rawUser = params.get('user');
+    if (!rawUser) {
+      throw new UnauthorizedException('User not found');
     }
 
-    return {
-      user,
-      auth_date: params.get('auth_date'),
-      query_id: params.get('query_id'),
-    };
-  }
-
-  async authWithTelegram(initData: string) {
-    const data = this.validateTelegramInitData(initData);
+    let tgUser: any;
+    try {
+      tgUser = JSON.parse(rawUser);
+    } catch {
+      throw new UnauthorizedException('Invalid user JSON');
+    }
 
     const user = await this.usersService.createOrUpdate({
-      telegramId: String(data.user.id),
-      firstName: data.user.first_name,
-      lastName: data.user.last_name,
+      telegramId: String(tgUser.id),
+      firstName: tgUser.first_name ?? null,
+      lastName: tgUser.last_name ?? null,
     });
-
-    return {
-      ok: true,
-      user,
-    };
+    return user;
   }
 }

@@ -11,23 +11,18 @@ export class User {
     @PrimaryGeneratedColumn()
     id: number;
 
-    // Telegram ID нельзя хранить как number — слишком большой
-    @Column({
-        type: 'bigint',
-        unique: true,
-        comment: 'Telegram user ID (stored as string because bigint > JS limit)',
-    })
+    @Column({ unique: true })
     telegramId: string;
 
-    @Column({ nullable: true })
-    firstName?: string;
+    @Column({ type: "varchar", nullable: true })
+    firstName?: string | null;
 
-    @Column({ nullable: true })
-    lastName?: string;
+    @Column({ type: "varchar", nullable: true })
+    lastName?: string | null;
 
-    @CreateDateColumn()
+    @CreateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
     createdAt: Date;
 
-    @UpdateDateColumn()
+    @UpdateDateColumn({ type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
     updatedAt: Date;
 }

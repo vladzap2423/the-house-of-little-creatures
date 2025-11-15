@@ -7,6 +7,6 @@ export class AuthController {
 
   @Post('telegram')
   async handleTelegramAuth(@Body('initData') initData: string) {
-    return this.authService.validateTelegramInitData(initData);
+    return this.authService.authWithTelegram(initData);
   }
 }
