@@ -6,7 +6,7 @@ export interface TelegramUserPayload {
 
 
 export const userService = {
-    authWithTelegram: (data: TelegramUserPayload) =>
-        http.post('/auth/telegram', data),
+    authWithTelegram: (data: TelegramUserPayload, signal?: AbortSignal) =>
+        http.post('/auth/telegram', data, { signal }),
 
 }

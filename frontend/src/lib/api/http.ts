@@ -4,6 +4,7 @@ interface RequestOptions {
     method?: string;
     body?: any;
     headers?: Record<string, string>;
+    signal?: AbortSignal;
 }
 
 async function request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
@@ -13,6 +14,7 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
             'Content-Type': 'application/json',
             ...(options.headers ?? {}),
         },
+        signal: options.signal,
     };
 
     if (options.body) {
@@ -31,8 +33,8 @@ async function request<T>(endpoint: string, options: RequestOptions = {}): Promi
 
 export const http = {
     get: <T>(url: string) => request<T>(url),
-    post: <T>(url: string, body?: any) =>
-        request<T>(url, { method: 'POST', body }),
+    post: <T>(url: string, body?: any, options?: RequestOptions) =>
+        request<T>(url, { method: 'POST', body, ...(options || []) }),
     put: <T>(url: string, body?: any) =>
         request<T>(url, { method: 'PUT', body }),
     delete: <T>(url: string) =>

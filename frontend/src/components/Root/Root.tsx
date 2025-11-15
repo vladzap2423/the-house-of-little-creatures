@@ -6,9 +6,13 @@ import { AppRoot } from '@telegram-apps/telegram-ui'
 
 import { ErrorBoundary } from '../ErrorBoundary'
 import { ErrorPage } from '../ErrorPage'
-import { useDidMount } from '@/hooks/useDidMounts'
 import './styles.css'
-import { AuthGate } from '../AuthGate'
+import dynamic from 'next/dynamic'
+
+
+const AuthGate = dynamic(() => import('../AuthGate').then(m => m.AuthGate), {
+  ssr: false,
+})
 
 function RootInner({ children }: PropsWithChildren) {
   const lp = useLaunchParams()
@@ -26,12 +30,6 @@ function RootInner({ children }: PropsWithChildren) {
 }
 
 export function Root({ children }: PropsWithChildren) {
-  const didMount = useDidMount()
-
-  if (!didMount) {
-    return <div className="root__loading">Loading...</div>
-  }
-
   return (
     <ErrorBoundary fallback={ErrorPage}>
       <RootInner>{children}</RootInner>
