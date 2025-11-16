@@ -1,52 +1,41 @@
-'use client';
+'use client'
 
-import { useEffect, useRef } from 'react';
-import { useRawInitData } from '@telegram-apps/sdk-react';
-import { userService } from '@/service/user.service';
+import { useEffect, useRef } from 'react'
+import { userService } from '@/service/user.service'
 
 export function AuthGate() {
-    const initDataRaw = useRawInitData();
-
-    // чтобы гарантировать вызов только один раз
-    const didSendRef = useRef(false);
+    const didSendRef = useRef(false)
 
     useEffect(() => {
-        if (!initDataRaw) return;
-        if (didSendRef.current) return; // уже отправляли
-        didSendRef.current = true;
+        const tg = typeof window !== 'undefined'
+            ? (window as any).Telegram?.WebApp
+            : null
 
-        console.log("AuthGate → sending initData in background...");
-
-        const controller = new AbortController();
-
-        const timeout = setTimeout(() => {
-            console.log("AuthGate → abort: backend did not respond in time");
-            controller.abort();
-        }, 3000); // 3 сек лимит
-
-        async function send() {
-            try {
-                await userService.authWithTelegram(
-                    { initData: initDataRaw! },
-                    controller.signal
-                );
-                console.log("AuthGate → backend OK");
-            } catch (e: any) {
-                if (e.name === "AbortError") {
-                    console.log("AuthGate → aborted (backend slow)");
-                } else {
-                    console.log("AuthGate → request failed silently:", e?.message);
-                }
-            } finally {
-                clearTimeout(timeout);
-            }
+        if (!tg) {
+            console.warn("AuthGate: Telegram WebApp API not found — running outside MiniApp")
+            return
         }
 
-        // отправляем без await — UI не блокируется
-        send();
+        const raw = tg.initDataRaw
 
-        return () => clearTimeout(timeout);
-    }, [initDataRaw]);
+        if (!raw || raw.length < 10) {
+            console.warn("AuthGate: initDataRaw is empty or invalid", raw)
+            return
+        }
 
-    return null;
+        if (didSendRef.current) return
+        didSendRef.current = true
+
+        console.log("AuthGate → sending REAL initDataRaw:", raw)
+
+        const controller = new AbortController()
+
+        userService
+            .authWithTelegram({ initData: raw }, controller.signal)
+            .then(() => console.log("AuthGate → backend OK"))
+            .catch(err => console.warn("AuthGate → failed:", err?.message))
+
+    }, [])
+
+    return null
 }

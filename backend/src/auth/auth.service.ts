@@ -1,6 +1,6 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
-import * as crypto from 'crypto';
 import { UsersService } from 'src/users/users.service';
+import { validateTelegramSignature } from './telegramValidate';
 
 @Injectable()
 export class AuthService {
@@ -10,16 +10,22 @@ export class AuthService {
     if (!initData) {
       throw new UnauthorizedException('Init data is empty');
     }
+    // 1. Валидация подписи
+    const botToken = process.env.BOT_TOKEN;
+    if (!botToken) {
+      throw new Error('BOT_TOKEN is not set in environment variables');
+    }
+    try {
+      validateTelegramSignature(initData, botToken);
+    } catch (err) {
+      console.error(err);
+      throw new UnauthorizedException('Invalid Telegram signature');
+    }
 
     const params = new URLSearchParams(initData);
 
-    const signature = params.get('signature'); 
-
-    if (!signature) {
-      console.log('Using WebApp hash mode');
-    }
-
     const rawUser = params.get('user');
+
     if (!rawUser) {
       throw new UnauthorizedException('User not found');
     }

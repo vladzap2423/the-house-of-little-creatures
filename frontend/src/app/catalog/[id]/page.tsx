@@ -1,119 +1,95 @@
 'use client'
 
-import { useParams, useRouter } from 'next/navigation'
-import { Title, Text, Button, Card, Image } from '@telegram-apps/telegram-ui'
-import { ArrowLeft } from 'lucide-react'
+import { useParams } from 'next/navigation'
+import { Title, Text, Button, Image } from '@telegram-apps/telegram-ui'
+import { Product } from '@/types/product'
+import { useState } from 'react'
 
-const toys = [
-  {
+// Пока без API
+const mock: Record<string, Product> = {
+  '1': {
     id: 1,
-    name: 'Зайчик в шапке',
+    name: 'Зайчик Мятный',
+    description:
+      'Мягкий, лёгкий, пастельный зайчик, связанный из гипоаллергенной пряжи. Высота 15 см. Отлично подходит в подарок.',
     price: 1200,
-    description:
-      'Мягкий вязаный зайчик в зимней шапочке с помпоном. Сделан вручную из гипоаллергенной пряжи.',
-    images: ['/1600.jpg', '/1600.jpg', '/1600.jpg'],
+    available: true,
+    images: ['/toys/toy1-1.jpg', '/toys/toy1-2.jpg'],
   },
-  {
+  '2': {
     id: 2,
-    name: 'Медвежонок Тедди',
-    price: 1500,
+    name: 'Амигуруми Котёнок',
     description:
-      'Классический мишка Тедди — символ уюта и детства. Отличный подарок для любого возраста.',
-    images: ['/1600.jpg', '/1600.jpg'],
+      'Очень маленький и необычно тёплый котёнок. Связан вручную. Высота 10 см.',
+    price: 900,
+    available: true,
+    images: ['/toys/toy2-1.jpg', '/toys/toy2-2.jpg'],
   },
-  {
-    id: 3,
-    name: 'Котик-мурчик',
-    price: 1300,
-    description:
-      'Очаровательный котик с шарфиком. Мягкий, уютный и очень пушистый друг.',
-    images: ['/1600.jpg'],
-  },
-]
+}
 
 export default function ProductPage() {
-  const params = useParams()
-  const router = useRouter()
-  const product = toys.find((t) => t.id === Number(params.id))
+  const { id } = useParams()
+  const product = mock[id as string]
 
-  if (!product) {
-    return <Text>Товар не найден 😿</Text>
-  }
+  const [current, setCurrent] = useState(0)
 
   return (
-    <div
-      style={{
-        padding: 16,
-        minHeight: '100vh',
-        backgroundColor: 'var(--tg-theme-bg-color)',
-        color: 'var(--tg-theme-text-color)',
-      }}
-    >
-      {/* Назад */}
-      <div
-        onClick={() => router.back()}
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 6,
-          cursor: 'pointer',
-          marginBottom: 12,
-        }}
-      >
-        <ArrowLeft size={18} />
-        <Text>Назад в каталог</Text>
-      </div>
-
-      {/* Название */}
+    <div style={{ padding: 16 }}>
       <Title level="1">{product.name}</Title>
 
-      {/* Галерея */}
+      {/* Фотолента */}
       <div
         style={{
-          display: 'flex',
-          gap: 8,
-          marginTop: 12,
           overflowX: 'auto',
+          whiteSpace: 'nowrap',
+          margin: '12px 0',
         }}
       >
-        {product.images.map((src, i) => (
+        {product.images.map((src, index) => (
           <Image
-            key={i}
+            key={src}
             src={src}
             alt={product.name}
-            width={180}
-            height={180}
             style={{
-              borderRadius: 12,
+              width: 260,
+              height: 260,
               objectFit: 'cover',
-              flexShrink: 0,
+              borderRadius: 12,
+              marginRight: 12,
+              display: 'inline-block',
+              border: index === current ? '2px solid #8B5CF6' : 'none',
             }}
+            onClick={() => setCurrent(index)}
           />
         ))}
       </div>
 
-      {/* Описание */}
-      <Card
-        style={{
-          marginTop: 16,
-          padding: 16,
-          background: 'var(--tg-theme-secondary-bg-color)',
-        }}
-      >
-        <Text>{product.description}</Text>
-        <Text style={{ marginTop: 12, fontSize: 18, fontWeight: 600 }}>
-          💰 {product.price} ₽
-        </Text>
+      <Text style={{ opacity: 0.85 }}>{product.description}</Text>
 
-        <Button
-          size="l"
-          mode="bezeled"
-          style={{ marginTop: 16, width: '100%' }}
-          onClick={() => alert('Товар добавлен в корзину!')}
-        >
-          Добавить в корзину
-        </Button>
-      </Card>
+      <div style={{ marginTop: 16 }}>
+        {product.available ? (
+          <Text weight="2" style={{ color: '#16a34a' }}>
+            В наличии ✔
+          </Text>
+        ) : (
+          <Text weight="2" style={{ color: '#dc2626' }}>
+            Нет в наличии
+          </Text>
+        )}
+      </div>
+
+      <Text weight="2" style={{ fontSize: 20, marginTop: 12 }}>
+        {product.price} ₽
+      </Text>
+
+      <Button
+        size="l"
+        mode="bezeled"
+        style={{ marginTop: 24 }}
+        onClick={() => { }}
+      >
+        Добавить в корзину
+      </Button>
     </div>
   )
 }
